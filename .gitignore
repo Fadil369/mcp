@@ -1,4 +1,4 @@
-# Logs
+﻿# Logs
 
 logs
 _.log
@@ -170,3 +170,9 @@ dist
 
 .dev.vars
 .wrangler/
+
+# Project: oracle-scanner
+tmp/
+artifacts/
+*.log
+deploy-*.json

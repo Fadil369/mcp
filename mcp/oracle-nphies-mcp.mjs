@@ -9,10 +9,13 @@
  *   oracle.claims.select_go        — Select N ready claims (unique MRN)
  *   oracle.claims.bundle_manifest  — Attachment manifest for a specific claim
  *   oracle.scan.trigger            — Write a trigger file to queue a site for scanning
+ *   oracle.portal.health           — HTTP ping each hospital portal (online/offline + ms)
  */
 
 import { readFileSync, existsSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import { resolve, join } from "node:path";
+import { request as httpRequest } from "node:http";
+import { request as httpsRequest } from "node:https";
 
 const ROOT = resolve(process.cwd());
 
@@ -298,6 +301,58 @@ const tools = [
       } catch (err) {
         return toolText(`Failed to write trigger: ${err.message}`);
       }
+    },
+  },
+
+  // ── Portal health ─────────────────────────────────────────────────
+  {
+    name: "oracle.portal.health",
+    description: "Checks HTTP reachability of each hospital portal site. Returns online/offline status with response time.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        siteId: { type: "string", description: "Optional: single site id to check." },
+      },
+      additionalProperties: false,
+    },
+    async call(args) {
+      const sites = loadSites();
+      const filter = clean(args?.siteId);
+      const targets = filter ? sites.filter(s => s.id === filter) : sites;
+
+      function pingOne(site) {
+        return new Promise(resolve => {
+          const timer = setTimeout(() => resolve({ site: site.id, name: site.name, online: false, status: 0, ms: 8000, error: "timeout" }), 8000);
+          try {
+            const parsed = new URL(site.url);
+            const useHttps = parsed.protocol === "https:";
+            const requester = useHttps ? httpsRequest : httpRequest;
+            const start = Date.now();
+            const req = requester({
+              hostname: parsed.hostname,
+              port: parsed.port || (useHttps ? 443 : 80),
+              path: parsed.pathname || "/",
+              method: "HEAD",
+              rejectUnauthorized: site.tlsRejectUnauthorized !== false,
+              timeout: 7000,
+            }, res => {
+              clearTimeout(timer);
+              res.resume();
+              resolve({ site: site.id, name: site.name, online: true, status: res.statusCode, ms: Date.now() - start });
+            });
+            req.on("error", err => { clearTimeout(timer); resolve({ site: site.id, name: site.name, online: false, status: 0, ms: Date.now() - start, error: err.message }); });
+            req.on("timeout", () => { req.destroy(); clearTimeout(timer); resolve({ site: site.id, name: site.name, online: false, status: 0, ms: 7000, error: "timeout" }); });
+            req.end();
+          } catch (err) {
+            clearTimeout(timer);
+            resolve({ site: site.id, name: site.name, online: false, status: 0, ms: 0, error: err.message });
+          }
+        });
+      }
+
+      const results = await Promise.all(targets.map(pingOne));
+      const onlineCount = results.filter(r => r.online).length;
+      return toolText(JSON.stringify({ checked: results.length, online: onlineCount, offline: results.length - onlineCount, sites: results }, null, 2));
     },
   },
 ];
