@@ -4,6 +4,8 @@ declare namespace Cloudflare {
 	interface Env {
 		OAUTH_KV: KVNamespace;
 		MCP_OBJECT: DurableObjectNamespace<import("./src/index").MyMCP>;
+			ORACLE_BRIDGE_URL?: string;
+			ORACLE_BRIDGE_SECRET?: string;
 		ASSETS: Fetcher;
 	}
 }
@@ -5707,3 +5709,4 @@ declare abstract class WorkflowInstance {
      */
     public status(): Promise<InstanceStatus>;
 }
+

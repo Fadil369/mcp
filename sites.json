@@ -1,0 +1,50 @@
+[
+  {
+    "id": "riyadh",
+    "name": "Riyadh",
+    "url": "https://128.1.1.185/prod/faces/Home",
+    "artifactsDir": "artifacts/oracle-portal/riyadh",
+    "enabled": true,
+    "tlsRejectUnauthorized": false
+  },
+  {
+    "id": "madinah",
+    "name": "Madinah",
+    "url": "http://172.25.11.26/Oasis/faces/Login.jsf",
+    "artifactsDir": "artifacts/oracle-portal/madinah",
+    "enabled": true,
+    "tlsRejectUnauthorized": true
+  },
+  {
+    "id": "unaizah",
+    "name": "Unaizah",
+    "url": "http://10.0.100.105/prod/faces/Login.jsf",
+    "artifactsDir": "artifacts/oracle-portal/unaizah",
+    "enabled": true,
+    "tlsRejectUnauthorized": true
+  },
+  {
+    "id": "khamis",
+    "name": "Khamis",
+    "url": "http://172.30.0.77/prod/faces/Login.jsf",
+    "artifactsDir": "artifacts/oracle-portal/khamis",
+    "enabled": true,
+    "tlsRejectUnauthorized": true
+  },
+  {
+    "id": "jizan",
+    "name": "Jizan",
+    "url": "http://172.17.4.84/prod/faces/Login.jsf",
+    "artifactsDir": "artifacts/oracle-portal/jizan",
+    "enabled": true,
+    "tlsRejectUnauthorized": true
+  },
+  {
+    "id": "abha",
+    "name": "Abha",
+    "url": "http://172.19.1.1/Oasis/faces/Home",
+    "artifactsDir": "artifacts/oracle-portal/abha",
+    "enabled": true,
+    "tlsRejectUnauthorized": true
+  }
+]

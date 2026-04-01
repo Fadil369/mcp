@@ -1,27 +1,37 @@
 /**
- * For more details on how to configure Wrangler, refer to:
- * https://developers.cloudflare.com/workers/wrangler/configuration/
+ * Wrangler config — OASIS Plus Unified Portal + oracle-nphies MCP
+ * Deploy target : portals.elfadil.com
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "mcp",
+	"name": "oasis-portal",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-03-10",
 	"compatibility_flags": ["nodejs_compat"],
+
+	// Route — bind the worker to portals.elfadil.com
+	// Make sure elfadil.com zone is active in your Cloudflare account.
+	"routes": [
+		{ "pattern": "portals.elfadil.com/*", "zone_name": "elfadil.com" }
+	],
+
+	// Durable Object for stateful MCP sessions
 	"migrations": [
-		{
-			"new_sqlite_classes": ["MyMCP"],
-			"tag": "v1"
-		}
+		{ "new_sqlite_classes": ["MyMCP"], "tag": "v1" }
 	],
 	"durable_objects": {
 		"bindings": [
-			{
-				"class_name": "MyMCP",
-				"name": "MCP_OBJECT"
-			}
+			{ "class_name": "MyMCP", "name": "MCP_OBJECT" }
 		]
 	},
+
+	// Environment variables
+	// ORACLE_BRIDGE_URL  — cloudflared-exposed URL of the local mcp-http-bridge
+	// ORACLE_BRIDGE_SECRET — optional shared secret (set via `wrangler secret put`)
+	"vars": {
+		"ORACLE_BRIDGE_URL": "https://mcp.elfadil.com"
+	},
+
 	"observability": {
 		"enabled": true
 	}

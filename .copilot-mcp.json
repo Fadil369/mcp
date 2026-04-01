@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "oracle-nphies": {
+      "command": "C:\\nodejs\\node.exe",
+      "args": ["C:\\oracle-scanner\\mcp\\oracle-nphies-mcp.mjs"],
+      "env": {
+        "NODE_TLS_REJECT_UNAUTHORIZED": "0"
+      }
+    }
+  }
+}
