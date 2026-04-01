@@ -183,7 +183,7 @@ function portalHtml(): string {
       <div class="card-header">
         <span class="dot"></span>
         <span class="site-name">${s.name}</span>
-        <a class="btn" href="/proxy/${s.id}/" target="_blank">Open ↗</a>
+        <a class="btn" href="${s.url}" target="_blank">Open ↗</a>
       </div>
       <div class="card-url">${s.url}</div>
       <div class="card-status" id="st-${s.id}">Loading…</div>
@@ -277,26 +277,15 @@ export default {
 			}
 		}
 
-		// Reverse proxy to Oracle portal  /proxy/:siteId/*
-		const proxyMatch = pathname.match(/^\/proxy\/([^/]+)(\/.*)$/);
+		// /proxy/:siteId/ — redirect to direct LAN URL
+		// (The Worker runs on CF edge and cannot reach private hospital LAN IPs.
+		//  Users must be on the hospital network or VPN to access these URLs.)
+		const proxyMatch = pathname.match(/^\/proxy\/([^/]+)(\/.*)?$/);
 		if (proxyMatch) {
 			const siteId = proxyMatch[1] as SiteId;
-			const subPath = proxyMatch[2] || "/";
 			const site = SITES.find((s) => s.id === siteId);
 			if (!site) return new Response(`Unknown site: ${siteId}`, { status: 404 });
-
-			// Route via local bridge so Worker doesn't expose internal LAN IPs
-			// The bridge URL is the cloudflared-exposed portal server
-			const base = env.ORACLE_BRIDGE_URL?.replace(/\/mcp$/, "") ?? "";
-			if (!base) return new Response("ORACLE_BRIDGE_URL not set", { status: 503 });
-			const target = `${base}/proxy/${siteId}${subPath}${url.search}`;
-			const proxyReq = new Request(target, {
-				method: request.method,
-				headers: request.headers,
-				body: request.body,
-				redirect: "follow",
-			});
-			return fetch(proxyReq);
+			return Response.redirect(site.url, 302);
 		}
 
 		// Dashboard (root)
